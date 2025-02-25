@@ -1,0 +1,135 @@
+{% extends "base_layout.html" %}
+{% load static %}
+{% block content %}
+<style>
+.fc-event .fc-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    !important;
+}
+</style>
+<div class="container mt-4">
+    <h2 class="text-center">Track Your Progress</h2>
+    <!-- FullCalendar -->
+    <div id='calendar' data-api-url="{% url 'exercisesAppName:progress_tracking' %}"></div>
+
+    <!-- Display messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <h3 class="mt-4">Add Progress</h3>
+    <form id="progressForm" method="POST" action="{% url 'exercisesAppName:add_progress' %}" class="mt-4">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label for="exerciseId" class="form-label">Select Exercise</label>
+            <select class="form-control" name="exerciseId" id="exerciseId" required>
+                <option value="" disabled selected>Choose an exercise</option>
+                {% for exercise in exercises %}
+                    <option value="{{ exercise.exercise_id }}">
+                        {{ exercise.name_of_exercise }} - {{ exercise.level }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="dateCompleted" class="form-label">Date Completed</label>
+            <input type="date" class="form-control" id="dateCompleted" name="dateCompleted" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="setsCompleted" class="form-label">Sets Completed</label>
+            <input type="number" class="form-control" id="setsCompleted" name="setsCompleted" min="1" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="repsCompleted" class="form-label">Reps Completed</label>
+            <input type="number" class="form-control" id="repsCompleted" name="repsCompleted" min="1" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="duration" class="form-label">Duration (minutes)</label>
+            <input type="number" step="0.1" class="form-control" id="duration" name="duration" min="0" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="caloriesBurned" class="form-label">Calories Burned</label>
+            <input type="number" step="0.1" class="form-control" id="caloriesBurned" name="caloriesBurned" min="0" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Add Progress</button>
+    </form>
+</div>
+<!-- Bootstrap Modal for Event Details -->
+<div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventModalLabel">Event Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="eventDetails"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+
+{% block extra_js %}
+ <script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function () {
+    var calendarEl = document.getElementById('calendar');
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridWeek',
+        events: function (fetchInfo, successCallback, failureCallback) {
+            fetch(`/exercises/progress/?start=${fetchInfo.startStr}&end=${fetchInfo.endStr}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("✅ Formatted Events: ", data);
+                    successCallback(data);
+                })
+                .catch(error => {
+                    console.error("❌ Calendar Fetch Error:", error);
+                    failureCallback(error);
+                });
+        },
+          eventClick: function (info) {
+            // Set event details inside the modal
+            let details = `
+                <b>${info.event.title}</b><br>
+                🏋️‍♂️ Sets: ${info.event.extendedProps.sets}<br>
+                🔄 Reps: ${info.event.extendedProps.reps}<br>
+                ⏳ Duration: ${info.event.extendedProps.duration}<br>
+                🔥 Calories: ${info.event.extendedProps.calories}
+            `;
+            document.getElementById('eventDetails').innerHTML = details;
+
+            // Show the Bootstrap modal
+            var myModal = new bootstrap.Modal(document.getElementById('eventModal'));
+            myModal.show();
+        },
+        eventContent: function(arg) {
+            console.log("🔍 Event Data:", arg.event);
+            return { html: `<b>${arg.event.title}</b>` };
+        }
+    });
+
+    calendar.render();
+});
+
+
+    </script>
+{% endblock %}
