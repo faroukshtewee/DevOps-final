@@ -94,8 +94,13 @@ resource "aws_eks_cluster" "my_eks" {
 }
 
 # ECR Repository
-resource "aws_ecr_repository" "my_ecr" {
-  name                 = "my-ecr-repo"
+resource "aws_ecr_repository" "my_ecr_init" {
+  name                 = "my-ecr-repo-init"
+  image_tag_mutability = "MUTABLE"
+}
+# ECR Repository
+resource "aws_ecr_repository" "my_ecr_django" {
+  name                 = "my-ecr-repo-dj"
   image_tag_mutability = "MUTABLE"
 }
 

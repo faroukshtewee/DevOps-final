@@ -8,11 +8,14 @@ output "eks_cluster_name" {
   value       = aws_eks_cluster.my_eks.name
 }
 
-output "ecr_repository_url" {
+output "ecr_repository_url_init" {
   description = "ECR Repository URL"
-  value       = aws_ecr_repository.my_ecr.repository_url
+  value       = aws_ecr_repository.my_ecr_init.repository_url
 }
-
+output "ecr_repository_url_django" {
+  description = "ECR Repository URL"
+  value       = aws_ecr_repository.my_ecr_django.repository_url
+}
 output "s3_bucket_url" {
   value = "https://${aws_s3_bucket.my_s3_bucket.bucket}.s3.amazonaws.com"  # ✅ Corrected reference
 }

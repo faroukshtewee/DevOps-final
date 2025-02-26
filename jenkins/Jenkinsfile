@@ -7,7 +7,7 @@ pipeline {
         IMAGE_NAME = 'gymnest-final-djangoproj'
         TAG = "latest"
         ACCOUNT_ID = '328772008060'
-        ECR_REPO =  '${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/my-ecr-repo'
+        ECR_REPO =  '${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/my-ecr-repo_django'
     }
 
     stages {
