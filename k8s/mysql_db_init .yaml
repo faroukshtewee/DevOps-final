@@ -7,7 +7,7 @@ metadata:
 spec:
   containers:
   - name: mysqldbinit
-    image: gymnest-final-init:latest #
+    image: 328772008060.dkr.ecr.eu-central-1.amazonaws.com/my-ecr-repo-init:latest #gymnest-final-init:latest
     env:
       - name: SQL_ROOT_PASSWORD
         valueFrom:

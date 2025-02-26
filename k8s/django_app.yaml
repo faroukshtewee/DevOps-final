@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: django-app
-          image: gymnest-final-djangoproj:latest #
+          image: 328772008060.dkr.ecr.eu-central-1.amazonaws.com/my-ecr-repo-django:latest #gymnest-final-djangoproj:latest #
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
