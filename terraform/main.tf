@@ -100,7 +100,7 @@ resource "aws_ecr_repository" "my_ecr_init" {
 }
 # ECR Repository
 resource "aws_ecr_repository" "my_ecr_django" {
-  name                 = "my-ecr-repo-dj"
+  name                 = "my-ecr-repo-django"
   image_tag_mutability = "MUTABLE"
 }
 
