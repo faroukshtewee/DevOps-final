@@ -9,6 +9,7 @@ from urllib.parse import quote
 region_name = 'eu-central-1'
 bucket_name = 'gymnest'
 folder_name = 'image_outputs/'
+cloudfront_domain = "d16bmxr9qjek07.cloudfront.net"
 
 session = boto3.Session()
 credentials = session.get_credentials()
@@ -28,10 +29,14 @@ if 'Contents' in response:
     for obj in response['Contents']:
         image_name = obj['Key']
         if image_name.endswith(('jpg', 'jpeg', 'png', 'gif')):
-            raw_image_url = f"https://{bucket_name}.s3.{region_name}.amazonaws.com/{image_name}"
+            # raw_image_url = f"https://{bucket_name}.s3.{region_name}.amazonaws.com/{image_name}"
+            raw_image_url = f"https://{cloudfront_domain}/{image_name}"
             image_url = quote(raw_image_url, safe=':/')  # Encode spaces in URL Encode spaces as %20 in URLs.
             extracted_name = image_name.split('/')[-1].split('.')[0]  # Remove folder path and extension
             extracted_name = extracted_name.replace('_', ' ').title()
+
+
+
             # Update the Exercise table where name_of_exercise matches the extracted name
             update_query = """
                 UPDATE Exercise
@@ -40,8 +45,8 @@ if 'Contents' in response:
             """
             cursor.execute(update_query, (image_url, extracted_name))
 
-            print(f"Updated linkForImage for exercise: {extracted_name} - {image_url}")
-
+            # print(f"Updated linkForImage for exercise: {extracted_name} - {image_url}")
+    print('Finshed Import Images From AWS')
 db_connection.commit()
 
 cursor.close()

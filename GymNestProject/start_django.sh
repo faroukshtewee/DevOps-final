@@ -21,7 +21,8 @@ else
     echo "No migrations to apply."
 fi
 
-
+echo "Import Images From AWS..."
+python -m exercisesApp.utils.aws_s3
 
 # Start the Django development server
 echo "Starting Django development server..."

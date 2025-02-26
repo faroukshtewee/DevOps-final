@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_REGION = 'eu-central-1'
+        EKS_CLUSTER = 'my-eks-cluster'
+        IMAGE_NAME = 'gymnest-final-djangoproj'
+        TAG = "latest"
+        ACCOUNT_ID = '328772008060'
+        ECR_REPO =  '${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/my-ecr-repo'
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'master', credentialsId: 'github-credentials', url: 'https://github.com/faroukshtewee/DevOps-final.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $ECR_REPO:$TAG .'
+            }
+        }
+
+        stage('Push to ECR') {
+            steps {
+                sh '''
+                aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+                docker tag $ECR_REPO:$TAG $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$TAG
+                docker push $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$TAG
+                '''
+            }
+        }
+
+        stage('Deploy to EKS') {
+            steps {
+                sh '''
+                aws eks update-kubeconfig --name $EKS_CLUSTER --region $AWS_REGION
+                kubectl set image deployment/django-app django-app=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$TAG
+                '''
+            }
+        }
+    }
+}
