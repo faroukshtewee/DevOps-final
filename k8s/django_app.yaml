@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-app
+  labels:
+    app: django-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: django-app
+  template:
+    metadata:
+      labels:
+        app: django-app
+    spec:
+      containers:
+        - name: django-app
+          image: gymnest-final-djangoproj:latest #
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+          - name: SQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysql.secret
+                key: root_password
+          - name: SQL_USER
+            valueFrom: 
+              configMapKeyRef:
+                name: django.config
+                key: SQL_USER
+          - name: SQL_PASSWORD
+            valueFrom: 
+              configMapKeyRef:
+                name: django.config
+                key: sql_password
+          - name: SQL_DATABASE
+            valueFrom: 
+              configMapKeyRef:
+                name: django.config
+                key: SQL_DATABASE
+          - name: SQL_HOST
+            valueFrom: 
+              configMapKeyRef:
+                name: django.config
+                key: SQL_HOST
+          - name: SQL_ENGINE
+            valueFrom: 
+              configMapKeyRef:
+                name: django.config
+                key: SQL_ENGINE
+          - name: SQL_PORT
+            valueFrom: 
+              configMapKeyRef:
+                name: django.config
+                key: SQL_PORT
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-svc
+spec:
+  type: LoadBalancer
+  selector:
+    app: django-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000

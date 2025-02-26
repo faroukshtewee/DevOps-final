@@ -1,0 +1,64 @@
+{% extends 'base_layout.html' %}
+{% block content %}
+{% load static %}
+ <div class="wrapper">
+
+ <div class="container my-5">
+  <h1 class="text-center mb-4">Exercise Library</h1>
+
+  <!-- Search Form -->
+  <form method="get" class="mb-4">
+    <div class="input-group">
+      <input type="text" name="q" class="form-control" placeholder="Search exercises..." value="{{ query }}">
+      <button class="btn btn-primary" type="submit">Search</button>
+    </div>
+  </form>
+
+  <!-- Exercise Grid -->
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+    {% for exercise in exercises %}
+      <div class="col">
+        <div class="card shadow-sm h-100">
+            <div class="image-container" style="height: 100%; width: 100%;">
+          {% if exercise.linkForImage %}
+            <img src="{{ exercise.linkForImage }}" class="card-img-top" alt="{{ exercise.name_of_exercise }}" style="object-fit: cover; width: 100%; height: 100%;">
+          {% else %}
+            <img src="https://via.placeholder.com/150" class="card-img-top" alt="No Image" style="object-fit: cover; width: 100%; height: 100%;">
+          {% endif %}
+               </div>
+          <div class="card-body">
+            <h5 class="card-title">{{ exercise.name_of_exercise }}</h5>
+            <p class="card-text">
+              <strong>Recommendation level:</strong> {{ exercise.exercise_level }}<br>
+              <strong>Type:</strong> {{ exercise.Type }}<br>
+            </p>
+            <a href="#" class="btn btn-primary"data-bs-toggle="modal" data-bs-target="#exerciseModal{{ exercise.id }}">View Details</a>
+          </div>
+        </div>
+      </div>
+       <div class="modal fade" id="exerciseModal{{ exercise.id }}" tabindex="-1" aria-labelledby="exerciseModalLabel{{ exercise.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exerciseModalLabel{{ exercise.id }}">{{ exercise.name_of_exercise }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p><strong>Description:</strong> {{ exercise.Desc }}</p>
+              <p><strong>Recommendations:</strong></p>
+                 <p><strong>Sets:</strong> {{ exercise.sets }}</p>
+                 <p><strong>Reps:</strong> {{ exercise.reps }}</p>
+              <p><strong>Equipment:</strong> {{ exercise.equipment_name }}</p>  </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p class="text-center">No exercises found matching "{{ query }}".</p>
+    {% endfor %}
+  </div>
+</div>
+ </div>
+{% endblock %}
