@@ -1,59 +1,198 @@
-# Declare the VPC
-resource "aws_vpc" "main_vpc" {
-  cidr_block = var.vpc_cidr_block
+# VPC for EKS
+module "vpc" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "~> 5.0"
+
+  name = "${var.project_name}-${var.environment}-vpc"
+  cidr = var.vpc_cidr
+
+  azs             = ["${var.aws_region}a", "${var.aws_region}b", "${var.aws_region}c"]
+  private_subnets = var.vpc_private_subnets
+  public_subnets  = var.vpc_public_subnets
+
+  enable_nat_gateway   = true
+  single_nat_gateway   = true
+  enable_dns_hostnames = true
+
+  public_subnet_tags = {
+    "kubernetes.io/cluster/${var.eks_cluster_name}" = "shared"
+    "kubernetes.io/role/elb"                        = "1"
+  }
+
+  private_subnet_tags = {
+    "kubernetes.io/cluster/${var.eks_cluster_name}" = "shared"
+    "kubernetes.io/role/internal-elb"               = "1"
+  }
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+    Terraform   = "true"
+  }
 }
 
+# EKS Cluster
+module "eks" {
+  source  = "terraform-aws-modules/eks/aws"
+  version = "~> 19.0"
 
+  cluster_name    = var.eks_cluster_name
+  cluster_version = var.eks_cluster_version
 
-# Declare the S3 Bucket ACL
-resource "aws_s3_bucket" "my_s3_bucket" {
+  vpc_id                         = module.vpc.vpc_id
+  subnet_ids                     = module.vpc.private_subnets
+  cluster_endpoint_public_access = true
+
+  eks_managed_node_group_defaults = {
+    ami_type = "AL2_x86_64"
+  }
+
+  eks_managed_node_groups = {
+    primary = {
+      name           = "node-group-1"
+      instance_types = var.eks_node_group_instance_types
+
+      min_size     = var.eks_node_group_min_size
+      max_size     = var.eks_node_group_max_size
+      desired_size = var.eks_node_group_desired_capacity
+    }
+  }
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+    Terraform   = "true"
+  }
+}
+
+# ECR Repositories
+resource "aws_ecr_repository" "repositories" {
+  count = length(var.ecr_repository_names)
+  name  = var.ecr_repository_names[count.index]
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  image_tag_mutability = "MUTABLE"
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+    Terraform   = "true"
+  }
+}
+
+# Lifecycle policy for ECR repositories
+resource "aws_ecr_lifecycle_policy" "lifecycle_policy" {
+  count      = length(var.ecr_repository_names)
+  repository = aws_ecr_repository.repositories[count.index].name
+
+  policy = jsonencode({
+    rules = [
+      {
+        rulePriority = 1
+        description  = "Keep last 10 images"
+        selection = {
+          tagStatus     = "any"
+          countType     = "imageCountMoreThan"
+          countNumber   = 10
+        }
+        action = {
+          type = "expire"
+        }
+      }
+    ]
+  })
+}
+
+# S3 Bucket
+resource "aws_s3_bucket" "static_assets" {
   bucket = var.s3_bucket_name
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+    Terraform   = "true"
+  }
 }
 
-resource "aws_s3_bucket_ownership_controls" "ownership" {
-  bucket = aws_s3_bucket.my_s3_bucket.id
+resource "aws_s3_bucket_ownership_controls" "static_assets" {
+  bucket = aws_s3_bucket.static_assets.id
 
   rule {
-    object_ownership = "BucketOwnerEnforced"
+    object_ownership = "BucketOwnerPreferred"
   }
 }
 
+resource "aws_s3_bucket_acl" "static_assets" {
+  depends_on = [aws_s3_bucket_ownership_controls.static_assets]
+  bucket     = aws_s3_bucket.static_assets.id
+  acl        = "private"
+}
 
-## Define the ACL separately
-#resource "aws_s3_bucket_acl" "my_s3_bucket_acl" {
-# bucket = aws_s3_bucket.my_s3_bucket.id
-#  acl    = "private"
-#
-#}
-
-# S3 Bucket Website Configuration
-resource "aws_s3_bucket_website_configuration" "my_s3_website" {
-  bucket = aws_s3_bucket.my_s3_bucket.id
-  index_document {
-    suffix = "index.html"
+resource "aws_s3_bucket_versioning" "static_assets" {
+  bucket = aws_s3_bucket.static_assets.id
+  versioning_configuration {
+    status = "Enabled"
   }
+}
+
+# CloudFront Origin Access Identity
+resource "aws_cloudfront_origin_access_identity" "oai" {
+  comment = "OAI for ${var.project_name}-${var.environment}"
+}
+
+# S3 bucket policy to allow CloudFront access
+resource "aws_s3_bucket_policy" "static_assets" {
+  bucket = aws_s3_bucket.static_assets.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${aws_cloudfront_origin_access_identity.oai.id}"
+        }
+        Action   = "s3:GetObject"
+        Resource = "${aws_s3_bucket.static_assets.arn}/*"
+      }
+    ]
+  })
 }
 
 # CloudFront Distribution
-resource "aws_cloudfront_distribution" "my_distribution" {
-  enabled = true
-
+resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
-    domain_name = aws_s3_bucket.my_s3_bucket.bucket_regional_domain_name
-    origin_id   = "S3-${aws_s3_bucket.my_s3_bucket.id}"
+    domain_name = aws_s3_bucket.static_assets.bucket_regional_domain_name
+    origin_id   = "S3Origin"
+
+    s3_origin_config {
+      origin_access_identity = aws_cloudfront_origin_access_identity.oai.cloudfront_access_identity_path
+    }
   }
 
+  enabled             = true
+  is_ipv6_enabled     = true
+  default_root_object = "index.html"
+  price_class         = var.cloudfront_price_class
+
   default_cache_behavior {
-    allowed_methods  = ["GET", "HEAD"]
-    cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "S3-${aws_s3_bucket.my_s3_bucket.id}"
-	forwarded_values {
-    query_string = false
-    cookies {
-      forward = "none"
-     }
+    allowed_methods  = var.cloudfront_allowed_methods
+    cached_methods   = var.cloudfront_cached_methods
+    target_origin_id = "S3Origin"
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
     }
+
     viewer_protocol_policy = "redirect-to-https"
+    min_ttl                = 0
+    default_ttl            = var.cloudfront_default_ttl
+    max_ttl                = 86400
   }
 
   restrictions {
@@ -65,71 +204,10 @@ resource "aws_cloudfront_distribution" "my_distribution" {
   viewer_certificate {
     cloudfront_default_certificate = true
   }
-}
 
-# IAM Policy for CloudFront to Access S3
-resource "aws_iam_policy" "cloudfront_policy" {
-  name        = "cloudfront_policy"
-  description = "IAM policy for CloudFront to access S3"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = ["s3:GetObject"]
-        Resource = "arn:aws:s3:::${aws_s3_bucket.my_s3_bucket.bucket}/*"
-      }
-    ]
-  })
-}
-# EKS Cluster
-resource "aws_eks_cluster" "my_eks" {
-  name     = "my-eks-cluster"
-  role_arn = aws_iam_role.eks_role.arn
-
-  vpc_config {
-    subnet_ids = [aws_subnet.public_subnet.id, aws_subnet.private_subnet.id]
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+    Terraform   = "true"
   }
 }
-
-# ECR Repository
-resource "aws_ecr_repository" "my_ecr_init" {
-  name                 = "my-ecr-repo-init"
-  image_tag_mutability = "MUTABLE"
-}
-# ECR Repository
-resource "aws_ecr_repository" "my_ecr_django" {
-  name                 = "my-ecr-repo-django"
-  image_tag_mutability = "MUTABLE"
-}
-
-# IAM Role for EKS
-resource "aws_iam_role" "eks_role" {
-  name = "eks-cluster-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action    = "sts:AssumeRole"
-      Effect    = "Allow"
-      Principal = { Service = "eks.amazonaws.com" }
-    }]
-  })
-}
-# Public Subnet
-resource "aws_subnet" "public_subnet" {
-  vpc_id                  = aws_vpc.main_vpc.id
-  cidr_block              = var.public_subnet_cidr
-  availability_zone       = "eu-central-1a"
-  map_public_ip_on_launch = true
-}
-
-# Private Subnet
-resource "aws_subnet" "private_subnet" {
-  vpc_id            = aws_vpc.main_vpc.id
-  cidr_block        = var.private_subnet_cidr
-  availability_zone = "eu-central-1b"
-}
-
-
