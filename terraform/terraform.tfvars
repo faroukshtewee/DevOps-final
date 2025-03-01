@@ -14,7 +14,7 @@ eks_node_group_min_size         = 1
 eks_node_group_max_size         = 3
 
 # ECR Configuration
-ecr_repository_names = ["frontend-app", "backend-api"]
+ecr_repository_names = ["django-repository", "init-repository"]
 
 # S3 and CloudFront Configuration
 s3_bucket_name          = "gymnest2"
