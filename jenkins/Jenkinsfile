@@ -7,37 +7,37 @@ pipeline {
         IMAGE_NAME = 'gymnest-final-djangoproj'
         TAG = "latest"
         ACCOUNT_ID = '328772008060'
-        ECR_REPO_DJANGO =  '${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/django-repository'
-        ECR_REPO_INIT =  '${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/init-repository'
+        ECR_REPO_DJANGO =  '%ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/django-repository'
+        ECR_REPO_INIT =  '%ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/init-repository'
     }
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'master', credentialsId: 'github-credentials', url: 'https://github.com/faroukshtewee/DevOps-final.git'
+                git branch: 'main', credentialsId: 'github-credentials', url: 'https://github.com/faroukshtewee/DevOps-final.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t $ECR_REPO:$TAG .'
+                bat 'docker build -t %ECR_REPO%:%TAG% .'
             }
         }
 
         stage('Push to ECR django') {
             steps {
                 bat '''
-                aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-                docker tag $ECR_REPO_DJANGO:$TAG $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/ECR_REPO_DJANGO:$TAG
-                docker push $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/ECR_REPO_DJANGO:$TAG
+                aws ecr get-login-password --region %AWS_REGION% | docker login --username AWS --password-stdin %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com
+                docker tag %ECR_REPO_DJANGO%:%TAG% %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/ECR_REPO_DJANGO:%TAG%
+                docker push %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO_DJANGO%:%TAG%
                 '''
             }
         }
         stage('Push to ECR init') {
             steps {
                 bat '''
-                aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-                docker tag $ECR_REPO_INIT:$TAG $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/ECR_REPO_INIT:$TAG
-                docker push $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/ECR_REPO_INIT:$TAG
+                aws ecr get-login-password --region %AWS_REGION% | docker login --username AWS --password-stdin %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com
+                docker tag %ECR_REPO_INIT%:%TAG% %ACCOUNT_ID.dkr%.ecr.%AWS_REGION%.amazonaws.com/ECR_REPO_INIT:%TAG%
+                docker push %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO_INIT%:%TAG%
                 '''
             }
         }
@@ -45,16 +45,16 @@ pipeline {
         stage('Deploy to EKS to django') {
             steps {
                 bat '''
-                aws eks update-kubeconfig --name $EKS_CLUSTER --region $AWS_REGION
-                kubectl set image deployment/django-app django-app=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/ECR_REPO_DJANGO:$TAG
+                aws eks update-kubeconfig --name %EKS_CLUSTER% --region %AWS_REGION%
+                kubectl set image deployment/django-app django-app=%ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO_DJANGO%:%TAG%
                 '''
             }
         }
          stage('Deploy to EKS to init') {
             steps {
                 bat '''
-                aws eks update-kubeconfig --name $EKS_CLUSTER --region $AWS_REGION
-                kubectl set image deployment/mysqldbinit mysqldbinit=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/ECR_REPO_INIT:$TAG
+                aws eks update-kubeconfig --name %EKS_CLUSTER% --region %AWS_REGION%
+                kubectl set image deployment/mysqldbinit mysqldbinit=%ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/ECR_REPO_INIT:%TAG%
                 '''
             }
         }
