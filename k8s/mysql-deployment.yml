@@ -39,7 +39,7 @@ spec:
               key: SQL_DATABASE
         ports:
         - containerPort: 3306
-          name: mysql
+          name: db
         volumeMounts:
         - name: mysql-persistent-storage
           mountPath: /var/lib/mysql
@@ -56,5 +56,5 @@ spec:
   ports:
   - port: 3306
   selector:
-    app: db
+    app: mysql
   type: ClusterIP
