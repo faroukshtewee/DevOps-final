@@ -27,7 +27,7 @@ pipeline {
             steps {
                 bat '''
                 aws ecr get-login-password --region %AWS_REGION% | docker login --username AWS --password-stdin %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com
-                docker tag %ECR_REPO_DJANGO%:%TAG% %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/ECR_REPO_DJANGO:%TAG%
+                docker tag %ECR_REPO_DJANGO%:%TAG% %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO_DJANGO%:%TAG%
                 docker push %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO_DJANGO%:%TAG%
                 '''
             }
@@ -36,7 +36,7 @@ pipeline {
             steps {
                 bat '''
                 aws ecr get-login-password --region %AWS_REGION% | docker login --username AWS --password-stdin %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com
-                docker tag %ECR_REPO_INIT%:%TAG% %ACCOUNT_ID.dkr%.ecr.%AWS_REGION%.amazonaws.com/ECR_REPO_INIT:%TAG%
+                docker tag %ECR_REPO_INIT%:%TAG% %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO_INIT%:%TAG%
                 docker push %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO_INIT%:%TAG%
                 '''
             }
@@ -54,7 +54,7 @@ pipeline {
             steps {
                 bat '''
                 aws eks update-kubeconfig --name %EKS_CLUSTER% --region %AWS_REGION%
-                kubectl set image deployment/mysqldbinit mysqldbinit=%ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/ECR_REPO_INIT:%TAG%
+                kubectl set image deployment/mysqldbinit mysqldbinit=%ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO_INIT%:%TAG%
                 '''
             }
         }
