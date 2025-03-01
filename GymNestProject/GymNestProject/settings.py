@@ -85,7 +85,7 @@ DATABASES = {
         "NAME": os.environ.get("SQL_DATABASE", "GymNest"),
         "USER": os.environ.get("SQL_USER", "GymNestUser"),
         "PASSWORD": os.environ.get("SQL_PASSWORD", "gymnestpass"),
-        "HOST": os.environ.get("SQL_HOST", "localhost"),  # 'db' is the MySQL service name in docker-compose.yml
+        "HOST": os.environ.get("SQL_HOST", "db"),  # 'db' is the MySQL service name in docker-compose.yml
         "PORT": os.environ.get("SQL_PORT", "3306"),
     }
 }
