@@ -27,11 +27,11 @@ spec:
             configMapKeyRef:
               name: django.config
               key: SQL_USER
-        - name: sql_password
+        - name: SQL_PASSWORD
           valueFrom:
             secretKeyRef:
               name: mysql.secret
-              key: SQL_PASSWORD
+              key: sql_password
         - name: SQL_DATABASE
           valueFrom:
             configMapKeyRef:
