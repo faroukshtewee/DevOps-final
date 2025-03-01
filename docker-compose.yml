@@ -62,7 +62,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-
   jenkins:
     image: jenkins/jenkins:lts
     container_name: jenkins
@@ -86,7 +85,4 @@ volumes:
 networks:
   jenkins_network:
     driver: bridge
-
-
-
 

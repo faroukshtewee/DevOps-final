@@ -1,6 +1,7 @@
-
+#!/bin/bash
 # Check if DATABASE is set to MySQL
-if [ "$DATABASE" = "mysql" ]; then
+if [ "$DATABASE" = "mysql" ];
+then
     echo "Waiting for MySQL to start..."
 
     # Wait until the MySQL service is available
@@ -27,6 +28,7 @@ python -m exercisesApp.utils.aws_s3
 # Start the Django development server
 echo "Starting Django development server..."
 python manage.py runserver 0.0.0.0:8000
+
 
 # Execute any additional commands passed to the script
 exec "$@"

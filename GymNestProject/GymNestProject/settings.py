@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-v2p2=be__p$6e2p37m_=zv2ksn0@e*uli=(i#6rn&l_)5m_m(7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -85,7 +85,7 @@ DATABASES = {
         "NAME": os.environ.get("SQL_DATABASE", "GymNest"),
         "USER": os.environ.get("SQL_USER", "GymNestUser"),
         "PASSWORD": os.environ.get("SQL_PASSWORD", "gymnestpass"),
-        "HOST": os.environ.get("SQL_HOST", "db"),  # 'db' is the MySQL service name in docker-compose.yml
+        "HOST": os.environ.get("SQL_HOST", "localhost"),  # 'db' is the MySQL service name in docker-compose.yml
         "PORT": os.environ.get("SQL_PORT", "3306"),
     }
 }

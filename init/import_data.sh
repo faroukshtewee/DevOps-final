@@ -12,4 +12,3 @@ if  [ ! -f  $DIRECTORY/$DONE_FILE_NAME ]; then
     mysql -h db -p$SQL_ROOT_PASSWORD  < data.sql
     touch $DIRECTORY/$DONE_FILE_NAME
 fi
-
