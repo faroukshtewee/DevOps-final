@@ -5,13 +5,13 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: db
+      app: mysql
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: db
+        app: mysql
     spec:
       containers:
       - image: mysql:8.0
