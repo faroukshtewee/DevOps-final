@@ -9,7 +9,7 @@ from urllib.parse import quote
 region_name = 'eu-central-1'
 bucket_name = 'gymnest2'
 folder_name = 'image_outputs/'
-cloudfront_domain = "d16bmxr9qjek07.cloudfront.net"
+cloudfront_domain = "d2b6s21pooxyj7.cloudfront.net"
 
 session = boto3.Session()
 credentials = session.get_credentials()
