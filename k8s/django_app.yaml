@@ -56,6 +56,11 @@ spec:
               configMapKeyRef:
                 name: django.config
                 key: SQL_PORT
+          - name: ALLOWED_HOSTS
+            valueFrom:
+              configMapKeyRef:
+                name: django.config
+                key: ALLOWED_HOSTS
 
 ---
 

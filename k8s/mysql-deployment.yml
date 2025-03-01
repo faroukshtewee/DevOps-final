@@ -37,6 +37,7 @@ spec:
             configMapKeyRef:
               name: django.config
               key: SQL_DATABASE
+
         ports:
         - containerPort: 3306
           name: db
