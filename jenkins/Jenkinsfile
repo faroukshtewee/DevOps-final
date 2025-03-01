@@ -7,10 +7,9 @@ pipeline {
         IMAGE_NAME = 'gymnest-final-djangoproj'
         TAG = "latest"
         ACCOUNT_ID = '328772008060'
-        ECR_REPO_DJANGO =  '${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/my-ecr-repo-django'
-        ECR_REPO_INIT =  '${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/my-ecr-repo-init'
+        ECR_REPO_DJANGO =  '${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/django-repository'
+        ECR_REPO_INIT =  '${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/init-repository'
     }
-
     stages {
         stage('Checkout Code') {
             steps {
@@ -32,6 +31,7 @@ pipeline {
                 docker push $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/ECR_REPO_DJANGO:$TAG
                 '''
             }
+        }
         stage('Push to ECR init') {
             steps {
                 sh '''
