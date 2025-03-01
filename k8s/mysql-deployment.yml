@@ -5,17 +5,17 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: mysql
+      app: db
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: mysql
+        app: db
     spec:
       containers:
       - image: mysql:8.0
-        name: mysql
+        name: db
         env:
         - name: SQL_ROOT_PASSWORD
           valueFrom:
@@ -56,5 +56,5 @@ spec:
   ports:
   - port: 3306
   selector:
-    app: mysql
+    app: db
   type: ClusterIP
