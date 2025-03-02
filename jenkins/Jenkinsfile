@@ -29,7 +29,7 @@ pipeline {
         stage('Push to ECR django') {
             steps {
                 bat """
-                aws ecr get-login-password --region %AWS_REGION% | docker login --username AWS --password-stdin %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com
+                aws ecr get-login-password --region %AWS_REGION% | docker login --username AWS --password-stdin %ECR_REPO_DJANGO%
                 docker tag %ECR_REPO_DJANGO%:%TAG% %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO_DJANGO%:%TAG%
                 docker push %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO_DJANGO%:%TAG%
                 """
@@ -38,7 +38,7 @@ pipeline {
         stage('Push to ECR init') {
             steps {
                 bat """
-                aws ecr get-login-password --region %AWS_REGION% | docker login --username AWS --password-stdin %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com
+                aws ecr get-login-password --region %AWS_REGION% | docker login --username AWS --password-stdin %ECR_REPO_INIT%
                 docker tag %ECR_REPO_INIT%:%TAG% %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO_INIT%:%TAG%
                 docker push %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO_INIT%:%TAG%
                 """
