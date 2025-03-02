@@ -30,7 +30,7 @@ pipeline {
             steps {
                 bat """
                 aws ecr get-login-password --region %AWS_REGION% | docker login --username AWS --password-stdin %ECR_REPO_DJANGO%
-                docker tag %ECR_REPO_DJANGO%:%TAG%
+                docker tag %ECR_REPO_DJANGO%:%TAG% ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/%ECR_REPO_DJANGO%:%TAG%
                 docker push %ECR_REPO_DJANGO%:%TAG%
                 """
             }
@@ -39,7 +39,7 @@ pipeline {
             steps {
                 bat """
                 aws ecr get-login-password --region %AWS_REGION% | docker login --username AWS --password-stdin %ECR_REPO_INIT%
-                docker tag %ECR_REPO_INIT%:%TAG%
+                 docker tag %ECR_REPO_INIT%:%TAG% ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/%ECR_REPO_INIT%:%TAG%
                 docker push %ECR_REPO_INIT%:%TAG%
                 """
             }
