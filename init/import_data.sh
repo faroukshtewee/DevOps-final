@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 DIRECTORY=./shared
 DONE_FILE_NAME=migration.done
 if [ ! -d "$DIRECTORY" ]; then
