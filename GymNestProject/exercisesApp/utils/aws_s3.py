@@ -1,3 +1,5 @@
+from builtins import float
+
 import boto3
 from .db_connection import get_db_connection
 from urllib.parse import quote
@@ -29,8 +31,8 @@ if 'Contents' in response:
     for obj in response['Contents']:
         image_name = obj['Key']
         if image_name.endswith(('jpg', 'jpeg', 'png', 'gif')):
-            raw_image_url = f"https://{bucket_name}.s3.{region_name}.amazonaws.com/{image_name}"
-            # raw_image_url = f"https://{cloudfront_domain}/{image_name}"
+            # raw_image_url = f"https://{bucket_name}.s3.{region_name}.amazonaws.com/{image_name}"
+            raw_image_url = f"https://{cloudfront_domain}/{folder_name}/{image_name}"
             image_url = quote(raw_image_url, safe=':/')  # Encode spaces in URL Encode spaces as %20 in URLs.
             extracted_name = image_name.split('/')[-1].split('.')[0]  # Remove folder path and extension
             extracted_name = extracted_name.replace('_', ' ').title()
