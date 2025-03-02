@@ -1,7 +1,7 @@
 pipeline {
     agent any
 
-   environment {
+    environment {
         AWS_REGION = 'eu-central-1'
         EKS_CLUSTER = 'my-cluster'
         TAG = "latest"
@@ -21,45 +21,47 @@ pipeline {
                 bat 'docker build -t %ECR_REPO_DJANGO%:%TAG% ./GymNestProject'
             }
         }
-        stage('Build Inint Docker Image') {
+        stage('Build Init Docker Image') {
             steps {
                 bat 'docker build -t %ECR_REPO_INIT%:%TAG% ./init'
             }
         }
-        stage('Push to ECR django') {
+        stage('Push to ECR Django') {
             steps {
                 bat """
-                aws ecr get-login-password --region %AWS_REGION% | docker login --username AWS --password-stdin %ECR_REPO_DJANGO%
-                docker tag %ECR_REPO_DJANGO%:%TAG% ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/%ECR_REPO_DJANGO%:%TAG%
+                aws ecr get-login-password --region %AWS_REGION% | docker login --username AWS --password-stdin %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com
                 docker push %ECR_REPO_DJANGO%:%TAG%
                 """
             }
         }
-        stage('Push to ECR init') {
+        stage('Push to ECR Init') {
             steps {
                 bat """
-                aws ecr get-login-password --region %AWS_REGION% | docker login --username AWS --password-stdin %ECR_REPO_INIT%
-                 docker tag %ECR_REPO_INIT%:%TAG% ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/%ECR_REPO_INIT%:%TAG%
+                aws ecr get-login-password --region %AWS_REGION% | docker login --username AWS --password-stdin %ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com
                 docker push %ECR_REPO_INIT%:%TAG%
                 """
             }
         }
 
-         stage('Deploy to EKS to django') {
+        stage('Deploy to EKS') {
             steps {
                 bat """
                 aws eks update-kubeconfig --name %EKS_CLUSTER% --region %AWS_REGION%
-                kubectl set image deployment/django-app django-app=${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/%ECR_REPO_DJANGO%:%TAG%
+
+                # Check if deployments exist and create them if they don't
+                kubectl get deployment django-app || kubectl create deployment django-app --image=%ECR_REPO_DJANGO%:%TAG%
+                kubectl get deployment mysqldbinit || kubectl create deployment mysqldbinit --image=%ECR_REPO_INIT%:%TAG%
+
+                # Update existing deployments
+                kubectl set image deployment/django-app django-app=%ECR_REPO_DJANGO%:%TAG%
+                kubectl set image deployment/mysqldbinit mysqldbinit=%ECR_REPO_INIT%:%TAG%
                 """
             }
-         }
-         stage('Deploy to EKS to init') {
-            steps {
-                bat """
-                aws eks update-kubeconfig --name %EKS_CLUSTER% --region %AWS_REGION%
-                kubectl set image deployment/mysqldbinit mysqldbinit=${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/%ECR_REPO_INIT%:%TAG%
-                """
-            }
+        }
+    }
+    post {
+        always {
+            cleanWs()
         }
     }
 }
