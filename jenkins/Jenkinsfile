@@ -18,12 +18,12 @@ pipeline {
 
         stage('Build Django Docker Image') {
             steps {
-                bat 'docker build -t %ECR_REPO_DJANGO%:%TAG% .'
+                bat 'docker build -t %ECR_REPO_DJANGO%:%TAG% ./GymNestProject'
             }
         }
         stage('Build Inint Docker Image') {
             steps {
-                bat 'docker build -t %ECR_REPO_INIT%:%TAG% .'
+                bat 'docker build -t %ECR_REPO_INIT%:%TAG% ./init'
             }
         }
         stage('Push to ECR django') {
