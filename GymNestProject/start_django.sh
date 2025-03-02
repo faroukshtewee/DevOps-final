@@ -11,7 +11,6 @@ then
 
     echo "MySQL started"
 fi
-
 # Apply migrations
 echo "Checking and applying database migrations..."
 python manage.py makemigrations

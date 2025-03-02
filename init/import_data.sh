@@ -1,7 +1,6 @@
 #!/bin/bash
 DIRECTORY=./shared
 DONE_FILE_NAME=migration.done
-
 if [ !  -d "$DIRECTORY" ]; then
   echo "create $DIRECTORY "
   mkdir $DIRECTORY
