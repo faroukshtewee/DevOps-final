@@ -52,7 +52,7 @@ pipeline {
                 kubectl get deployment mysqldbinit || kubectl create deployment mysqldbinit --image=%ECR_REPO_INIT%:%TAG%
 
                 kubectl set image deployment/django-app django-app=%ECR_REPO_DJANGO%:%TAG%
-                kubectl set image deployment/mysqldbinit mysqldbinit=%ECR_REPO_INIT%:%TAG%
+                kubectl set image deployment/mysqldbinit init-repository=%ECR_REPO_INIT%:%TAG%
                 """
             }
         }
