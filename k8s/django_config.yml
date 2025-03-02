@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: django.config
 data:
-  MYSQL_ROOT_PASSWORD: "Admin123"
+  SQL_ROOT_PASSWORD: "Admin123"
   SQL_USER: "GymNestUser"
   SQL_PASSWORD: "gymnestpass"
   SQL_DATABASE: "GymNest"
