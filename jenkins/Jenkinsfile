@@ -49,7 +49,7 @@ pipeline {
             steps {
                 bat """
                 aws eks update-kubeconfig --name %EKS_CLUSTER% --region %AWS_REGION%
-                kubectl set image deployment/django-app django-app %ECR_REPO_DJANGO%:%TAG%
+                kubectl set image deployment/django-app django-app=%ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO_DJANGO%:%TAG%
                 """
             }
         }
@@ -57,7 +57,7 @@ pipeline {
             steps {
                 bat """
                 aws eks update-kubeconfig --name %EKS_CLUSTER% --region %AWS_REGION%
-                kubectl set image deployment/mysqldbinit mysqldbinit= %ECR_REPO_INIT%:%TAG%
+                kubectl set image deployment/mysqldbinit mysqldbinit=%ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO_INIT%:%TAG%
                 """
             }
         }
