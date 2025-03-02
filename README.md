@@ -11,6 +11,7 @@ GymNest is a Django gym exercise application designed to help users track and ma
 * **Exercise Tracking:** Users can log their workouts, including sets, reps, and weights.
 * **Kaggle Dataset Integration:** Pre-populated exercise data from a Kaggle dataset. https://www.kaggle.com/datasets/niharika41298/gym-exercise-data
 * **User Authentication:** Secure user accounts for personalized tracking.
+* **Security:** `.env` files, Secrets, config map
 ## Technologies Used
 * **Backend:** Django (Python)
 * **Database:** MySQL
