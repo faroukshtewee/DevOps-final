@@ -57,7 +57,7 @@ pipeline {
             steps {
                 bat """
                 aws eks update-kubeconfig --name %EKS_CLUSTER% --region %AWS_REGION%
-                kubectl set image deployment/mysqldbinit mysqldbinit=%ECR_REPO_INIT%:%TAG%
+                kubectl set image deployment/mysqldbinit mysqldbinit=%ECR_REPO_INIT%:%TAG% 
                 """
             }
         }
